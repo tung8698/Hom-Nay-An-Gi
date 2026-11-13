@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hôm nay ăn gì?</title>
+<style>
+  :root {
+    --bg: #0e1015; --panel: #181b22; --panel2: #20242d; --line: #2d323d;
+    --text: #e8eaf0; --muted: #8b93a3; --accent: #e4ae39;
+    --blue: #4b69ff; --purple: #8847ff; --pink: #d32ce6; --red: #eb4b4b; --gold: #e4ae39;
+    --cw: 180px; /* chiều rộng 1 ô trong dải quay */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #1c2130 0%, var(--bg) 60%);
+    color: var(--text); font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden;
+  }
+  button { font: inherit; cursor: pointer; }
+  .screen { display: none; min-height: 100vh; padding: 28px 18px 40px; flex-direction: column; align-items: center; }
+  .screen.active { display: flex; animation: fade .35s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  h1 { margin: 10px 0 4px; font-size: clamp(28px, 5vw, 44px); letter-spacing: 3px; text-align: center; }
+  h1 span { color: var(--accent); }
+  .sub { color: var(--muted); margin: 0 0 26px; text-align: center; }
+
+  /* ---------- màn chọn tiêu chí ---------- */
+  .group { width: min(760px, 100%); margin-bottom: 22px; }
+  .group h2 { font-size: 13px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin: 0 0 10px; }
+  .opts { display: grid; gap: 12px; grid-auto-flow: column; grid-auto-columns: 1fr; }
+  .opt {
+    background: var(--panel); border: 2px solid var(--line); color: var(--text);
+    border-radius: 14px; padding: 18px 10px; font-size: 18px; font-weight: 600;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; transition: .15s;
+  }
+  .opt .ico { font-size: 34px; line-height: 1; }
+  .opt small { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .opt:hover { border-color: #4a5266; transform: translateY(-2px); }
+  .opt.sel { border-color: var(--accent); background: #2a2415; box-shadow: 0 0 0 3px rgba(228,174,57,.18), 0 8px 24px rgba(228,174,57,.12); }
+  #pool-info { color: var(--muted); height: 24px; margin: 4px 0 14px; }
+  #pool-info b { color: var(--accent); }
+  .rules { color: var(--muted); font-size: 12.5px; max-width: 760px; text-align: center; line-height: 1.7; margin-top: 22px; }
+  .warn { color: #ffb86b; font-size: 13px; margin-bottom: 10px; }
+
+  .big {
+    background: linear-gradient(180deg, #f1c24f, #d59a1d); color: #241a02; border: 0;
+    padding: 15px 44px; border-radius: 12px; font-weight: 800; font-size: 18px; letter-spacing: 2px;
+    box-shadow: 0 8px 26px rgba(228,174,57,.28); transition: .15s;
+  }
+  .big:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+  .big:disabled { background: #2b303b; color: #6c7384; box-shadow: none; cursor: not-allowed; }
+  .ghost { background: transparent; color: var(--text); border: 2px solid var(--line); padding: 12px 26px; border-radius: 12px; font-weight: 600; }
+  .ghost:hover { border-color: #566; background: var(--panel); }
+
+  /* ---------- màn quay ---------- */
+  .case-head { text-align: center; margin-bottom: 18px; }
+  .case-head .t { font-size: 14px; letter-spacing: 4px; color: var(--muted); }
+  .case-head .n { font-size: clamp(24px, 4vw, 34px); font-weight: 800; letter-spacing: 2px; margin: 4px 0 10px; }
+  .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .chip { background: var(--panel2); border: 1px solid var(--line); border-radius: 99px; padding: 5px 14px; font-size: 13px; }
+
+  .roller {
+    position: relative; width: min(1180px, 100%); height: 236px; margin: 14px 0 22px;
+    background: linear-gradient(180deg, #12151b, #0b0d11); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    overflow: hidden; border-radius: 6px;
+  }
+  .strip { position: absolute; left: 0; top: 18px; display: flex; will-change: transform; }
+  .cw { flex: 0 0 var(--cw); width: var(--cw); padding: 0 5px; }
+  .card {
+    position: relative; height: 200px; border-radius: 6px; overflow: hidden;
+    background: linear-gradient(180deg, #2a2f3b 0%, #191c23 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    transition: transform .5s cubic-bezier(.2,.9,.3,1.3), filter .5s, box-shadow .5s;
+  }
+  .card::before { /* quầng sáng theo độ hiếm */
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 38%, var(--cg) 0%, transparent 62%);
+  }
+  .card::after { /* thanh màu độ hiếm ở đáy */
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: var(--c);
+    box-shadow: 0 -8px 20px var(--c);
+  }
+  .card .art { position: relative; width: 140px; height: 128px; margin-top: 10px; display: flex; align-items: center; justify-content: center; }
+  .card .art svg, .card .art img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.4)); }
+  .card .nm {
+    position: relative; margin: 4px 0 8px; padding: 0 10px; font-size: 13px; font-weight: 700; text-align: center; line-height: 1.25;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .roller.done .card { filter: brightness(.45) saturate(.7); }
+  .roller.done .card.win { filter: none; transform: scale(1.1); box-shadow: 0 0 40px var(--c), 0 0 0 2px var(--c); z-index: 2; position: relative; }
+
+  .marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--accent); box-shadow: 0 0 14px 2px rgba(228,174,57,.8); z-index: 5; pointer-events: none; }
+  .marker::before, .marker::after { content: ""; position: absolute; left: -9px; border: 9px solid transparent; }
+  .marker::before { top: 0; border-top-color: var(--accent); }
+  .marker::after { bottom: 0; border-bottom-color: var(--accent); }
+  .fade { position: absolute; top: 0; bottom: 0; width: 16%; z-index: 4; pointer-events: none; }
+  .fade.l { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
+  .fade.r { right: 0; background: linear-gradient(270deg, var(--bg), transparent); }
+
+  #result { text-align: center; min-height: 118px; width: 100%; }
+  #screen-spin { overflow-x: clip; }
+  #result .lead { color: var(--muted); letter-spacing: 3px; font-size: 13px; }
+  #result .dish { font-size: clamp(28px, 5vw, 48px); font-weight: 900; margin: 6px 0; text-shadow: 0 0 30px var(--c); animation: pop .6s cubic-bezier(.2,.9,.3,1.4); }
+  #result .rar { font-weight: 700; letter-spacing: 2px; font-size: 14px; }
+  @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ảnh món trúng: phóng to + tỏa sáng */
+  .hero { --s: min(420px, 88vw, 56vh); position: relative; width: var(--s); height: var(--s); margin: 30px auto 16px; }
+  .hero .rays { /* tia sáng xoay phía sau */
+    position: absolute; inset: -38%; border-radius: 50%; pointer-events: none;
+    background: repeating-conic-gradient(from 0deg, var(--cg) 0deg 7deg, transparent 7deg 22deg);
+    -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%);
+    animation: rays-in .9s ease-out both, spin 18s linear infinite;
+  }
+  .hero .halo { /* quầng sáng nhịp đập */
+    position: absolute; inset: -14%; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, var(--c) 0%, var(--cg) 38%, transparent 70%);
+    filter: blur(14px); animation: halo-in .7s ease-out both, pulse 2.2s ease-in-out .7s infinite;
+  }
+  .hero .pic {
+    position: relative; width: 100%; height: 100%; border-radius: 18px; overflow: hidden;
+    background: #191c23; border: 3px solid var(--c);
+    box-shadow: 0 0 24px var(--c), 0 0 70px var(--cg), inset 0 0 18px rgba(0,0,0,.5);
+    animation: zoom-in .75s cubic-bezier(.2,.9,.3,1.35) both;
+  }
+  .hero .pic img, .hero .pic svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero .pic::after { /* vệt bóng lướt qua ảnh */
+    content: ""; position: absolute; top: 0; bottom: 0; width: 45%; left: -60%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent);
+    transform: skewX(-18deg); animation: shine 1.1s ease-out .55s both;
+  }
+  @keyframes zoom-in { 0% { transform: scale(.35); opacity: 0; } 100% { transform: none; opacity: 1; } }
+  @keyframes halo-in { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes rays-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes spin { to { rotate: 360deg; } }
+  @keyframes pulse { 0%, 100% { opacity: .75; transform: scale(.96); } 50% { opacity: 1; transform: scale(1.06); } }
+  @keyframes shine { to { left: 130%; } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero .rays, .hero .halo, .hero .pic, .hero .pic::after { animation: none; }
+  }
+  .actions { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; justify-content: center; }
+  #mute { position: fixed; top: 14px; right: 14px; background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 8px 12px; z-index: 20; }
+
+  /* ---------- thư viện hình (#gallery) ---------- */
+  #gallery { display: none; flex-wrap: wrap; gap: 10px; padding: 20px; justify-content: center; }
+  #gallery .cw { flex: 0 0 var(--cw); }
+</style>
+</head>
+<body>
+<button id="mute" title="Bật/tắt âm thanh">🔊</button>
+
+<!-- ============ MÀN 1: CHỌN TIÊU CHÍ ============ -->
+<section id="screen-pick" class="screen active">
+  <h1>HÔM NAY <span>ĂN GÌ?</span></h1>
+  <p class="sub">Chọn 2 tiêu chí rồi mở hòm, để số phận quyết định.</p>
+  <div id="warn" class="warn"></div>
+
+  <div class="group">
+    <h2>1 · Giá thành</h2>
+    <div class="opts" id="opts-price">
+      <button class="opt" data-v="re"><span class="ico">💸</span>Rẻ<small>bình dân, no bụng</small></button>
+      <button class="opt" data-v="dat"><span class="ico">💎</span>Đắt<small>hôm nay đáng được thưởng</small></button>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>2 · Thời tiết</h2>
+    <div class="opts" id="opts-weather">
+      <button class="opt" data-v="nong"><span class="ico">🔥</span>Nóng</button>
+      <button class="opt" data-v="mat"><span class="ico">🍃</span>Mát</button>
+      <button class="opt" data-v="lanh"><span class="ico">❄️</span>Lạnh</button>
+    </div>
+  </div>
+
+  <div id="pool-info"></div>
+  <button class="big" id="go" disabled>TIẾP TỤC</button>
+  <div class="rules">
+    Lẩu chỉ ăn khi trời <b>lạnh</b> · Ốc và đồ nướng chỉ ăn khi trời <b>mát</b> · Các món còn lại ăn bất kể thời tiết.<br>
+    Danh sách đọc từ file Menu: từ đầu đến "Mì tôm" là món <b>rẻ</b>, sau "Mì tôm" là món <b>đắt</b>.
+  </div>
+</section>
+
+<!-- ============ MÀN 2: QUAY MÓN ============ -->
+<section id="screen-spin" class="screen">
+  <div class="case-head">
+    <div class="t">HÒM ẨM THỰC</div>
+    <div class="n">HÔM NAY ĂN GÌ?</div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="roller" id="roller">
+    <div class="strip" id="strip"></div>
+    <div class="fade l"></div><div class="fade r"></div>
+    <div class="marker"></div>
+  </div>
+
+  <div id="result"></div>
+  <div class="actions" id="actions-open">
+    <button class="ghost" id="back1">← Đổi tiêu chí</button>
+    <button class="big" id="open">MỞ HÒM</button>
+  </div>
+  <div class="actions" id="actions-done" style="display:none">
+    <button class="ghost" id="back2">← Đổi tiêu chí</button>
+    <button class="big" id="again">QUAY LẠI</button>
+  </div>
+</section>
+
+<div id="gallery"></div>
+
+<script>
+"use strict";
+/* ====================== tiện ích ====================== */
+const $ = s => document.querySelector(s);
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase();
+function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+const pickBy = (h, arr, shift = 0) => arr[((h >>> shift) >>> 0) % arr.length];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const WEATHER = { nong: "🔥 Nóng", mat: "🍃 Mát", lanh: "❄️ Lạnh" };
+const PRICE = { re: "💸 Rẻ", dat: "💎 Đắt" };
+
+/* ====================== độ hiếm (kiểu CS2) ====================== */
+const RARITY = [
+  { key: "blue",   name: "BÌNH DÂN",    c: "#4b69ff", w: 45 },
+  { key: "purple", name: "NGON",        c: "#8847ff", w: 30 },
+  { key: "pink",   name: "RẤT NGON",    c: "#d32ce6", w: 15 },
+  { key: "red",    name: "CỰC PHẨM",    c: "#eb4b4b", w: 7  },
+  { key: "gold",   name: "★ HUYỀN THOẠI", c: "#e4ae39", w: 3 },
+];
+function rarityOf(name) { // cố định theo tên món, chỉ để trang trí (không ảnh hưởng xác suất)
+  let r = hash(name) % 100, acc = 0;
+  for (const x of RARITY) { acc += x.w; if (r < acc) return x; }
+  return RARITY[0];
+}
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+
+/* ====================== hình minh hoạ từng món (SVG) ====================== */
+const SH = `<ellipse cx="100" cy="176" rx="70" ry="9" fill="#000" opacity=".28"/>`;
+const STEAM = (x = 100, y = 80) => `<g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".5">
+  <path d="M${x-22} ${y} q-9 -11 0 -22 q9 -11 0 -22"/><path d="M${x} ${y-6} q-9 -11 0 -22 q9 -11 0 -22"/><path d="M${x+22} ${y} q-9 -11 0 -22 q9 -11 0 -22"/></g>`;
+const PLATE = `<ellipse cx="100" cy="146" rx="84" ry="27" fill="#f4f1ea"/><ellipse cx="100" cy="146" rx="84" ry="27" fill="none" stroke="#d5cfc2" stroke-width="3"/><ellipse cx="100" cy="144" rx="62" ry="18" fill="#e8e3d8"/>`;
+const wave = (x, y, n, w, a) => `M${x} ${y} q${w/2} ${-a} ${w} 0` + ` t${w} 0`.repeat(n - 1);
+
+const ART = {
+  bowl(h, o = {}) {
+    const bowl = o.bowl || pickBy(h, ["#e9eef2", "#f3e6d3", "#dfe9f3", "#f1dede"]);
+    const soup = o.soup || pickBy(h, ["#e7b95a", "#d9a14c", "#e9c777", "#c98a3f"]);
+    const noodle = o.noodle || "#fff3c9";
+    const top = o.top || pickBy(h, ["#c1412b", "#7bb342", "#d98a4c"], 4);
+    return `${SH}${STEAM(100, 82)}
+      <path d="M32 98 Q32 172 100 172 Q168 172 168 98Z" fill="${bowl}"/>
+      <path d="M40 132 Q100 150 160 132" fill="none" stroke="${o.band || "#4a7fc1"}" stroke-width="6" stroke-linecap="round" opacity=".85"/>
+      <ellipse cx="100" cy="98" rx="68" ry="19" fill="${bowl}" stroke="#b8c2cc" stroke-width="2"/>
+      <ellipse cx="100" cy="100" rx="60" ry="14.5" fill="${soup}"/>
+      <g fill="none" stroke="${noodle}" stroke-width="5" stroke-linecap="round"><path d="${wave(62, 99, 4, 19, 10)}"/><path d="${wave(70, 105, 3, 19, 8)}"/></g>
+      <circle cx="82" cy="95" r="8" fill="${top}"/><circle cx="118" cy="97" r="7" fill="${o.top2 || "#6aa84f"}"/>
+      <circle cx="104" cy="92" r="4" fill="#6aa84f"/><circle cx="92" cy="104" r="3.5" fill="#6aa84f"/>
+      <g stroke="#c8864a" stroke-width="5" stroke-linecap="round"><line x1="126" y1="40" x2="150" y2="100"/><line x1="139" y1="36" x2="160" y2="98"/></g>`;
+  },
+  noodle(h, o) { return ART.bowl(h, o); },
+  congee(h) { return ART.bowl(h, { soup: "#f3ead6", noodle: "#fff", top: "#a85a3a", top2: "#6aa84f", band: "#c17b3a" }); },
+  thai(h) { return ART.bowl(h, { soup: "#e2542f", noodle: "#ffe9b8", top: "#f3c04c", top2: "#6aa84f", bowl: "#f6e9d6", band: "#d6402b" }); },
+
+  rice(h) {
+    const meat = pickBy(h, ["#8c4a2b", "#a55a2f", "#74391f"]);
+    return `${SH}${PLATE}
+      <path d="M50 138 Q54 92 100 90 Q146 92 150 138 Q100 154 50 138Z" fill="#fffdf8" stroke="#e5dfcf" stroke-width="2"/>
+      <g fill="#efe9d8"><ellipse cx="84" cy="108" rx="5" ry="2.5"/><ellipse cx="106" cy="102" rx="5" ry="2.5"/><ellipse cx="120" cy="116" rx="5" ry="2.5"/><ellipse cx="94" cy="124" rx="5" ry="2.5"/></g>
+      <g transform="rotate(-12 124 114)"><rect x="92" y="100" width="70" height="24" rx="11" fill="${meat}"/>
+        <path d="M104 104 l8 16 M120 102 l8 18 M136 102 l8 18" stroke="#3b1c0e" stroke-width="4" stroke-linecap="round" opacity=".55"/></g>
+      <ellipse cx="62" cy="126" rx="17" ry="11" fill="#fff" stroke="#e8e2d2"/><circle cx="62" cy="126" r="6.5" fill="#f6b21c"/>
+      <g fill="#8bc34a" stroke="#4e8a2b" stroke-width="2"><circle cx="150" cy="152" r="8"/><circle cx="132" cy="160" r="8"/></g>`;
+  },
+
+  bread(h) {
+    const meat = pickBy(h, ["#e07a6a", "#a85a3a", "#c9743d"]);
+    return `${SH}<g transform="rotate(-14 100 112)">
+      <rect x="20" y="100" width="160" height="34" rx="17" fill="#cc8d3c"/>
+      <path d="M28 104 q10 -14 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V108 H28Z" fill="#79b83b"/>
+      <rect x="34" y="96" width="132" height="9" rx="4.5" fill="${meat}"/>
+      <circle cx="58" cy="98" r="6" fill="#d8432e"/><circle cx="96" cy="99" r="6" fill="#d8432e"/><circle cx="136" cy="98" r="6" fill="#d8432e"/>
+      <rect x="20" y="62" width="160" height="38" rx="19" fill="#e7ab52"/>
+      <path d="M52 68 l10 26 M82 65 l10 30 M112 65 l10 30 M142 68 l10 26" stroke="#b97a2b" stroke-width="5" stroke-linecap="round"/>
+      <rect x="30" y="66" width="130" height="7" rx="3.5" fill="#fff" opacity=".18"/></g>`;
+  },
+
+  hotpot(h, name) {
+    const n = norm(name || "");
+    const pairs = [["#d93b2b", "#f3c24f"], ["#cf3a2e", "#e8dcb4"], ["#e2a533", "#f6e8bd"]];
+    let [a, b] = pickBy(h, pairs);
+    if (/thai/.test(n)) [a, b] = ["#e04a2a", "#f3c24f"];
+    if (/dam/.test(n)) [a, b] = ["#e2b23f", "#f1e3b0"];
+    return `${SH}${STEAM(100, 72)}
+      <g fill="#ff8a1e"><path d="M54 176 q-9 -18 3 -30 q3 12 10 14 q4 -9 -2 -18 q18 9 13 34z"/><path d="M104 176 q-9 -18 3 -30 q3 12 10 14 q4 -9 -2 -18 q18 9 13 34z"/></g>
+      <g fill="#ffd34d"><path d="M62 176 q-3 -9 3 -15 q2 6 5 7 q2 -4 -1 -9 q8 5 6 17z"/><path d="M112 176 q-3 -9 3 -15 q2 6 5 7 q2 -4 -1 -9 q8 5 6 17z"/></g>
+      <rect x="10" y="96" width="30" height="11" rx="5.5" fill="#2c3037"/><rect x="160" y="96" width="30" height="11" rx="5.5" fill="#2c3037"/>
+      <path d="M28 96 Q28 160 100 160 Q172 160 172 96Z" fill="#434952"/>
+      <ellipse cx="100" cy="96" rx="74" ry="21" fill="#646b76"/>
+      <ellipse cx="100" cy="98" rx="66" ry="15.5" fill="${a}"/>
+      <path d="M100 82.5 A66 15.5 0 0 1 100 113.5 Z" fill="${b}"/><line x1="100" y1="82.5" x2="100" y2="113.5" stroke="#646b76" stroke-width="3"/>
+      <circle cx="72" cy="94" r="7" fill="#f3a8b2"/><circle cx="84" cy="104" r="6" fill="#f3a8b2" stroke="#fff" stroke-width="1.5"/>
+      <ellipse cx="124" cy="94" rx="8" ry="6" fill="#c9a074"/><ellipse cx="140" cy="102" rx="8" ry="6" fill="#d8b98a"/>
+      <path d="M58 104 q6 -10 14 -2 q-4 8 -14 2Z" fill="#6bb43a"/><path d="M110 108 q8 -8 14 0 q-6 6 -14 0Z" fill="#6bb43a"/>`;
+  },
+
+  grill(h) {
+    const meat = pickBy(h, ["#a24b2a", "#8a3f22", "#b5602f"]);
+    const flame = x => `<g transform="translate(${x} 0)"><path d="M0 178 q-12 -22 4 -38 q4 15 14 17 q-2 -16 10 -28 q16 26 4 49z" fill="#ff7a1a"/><path d="M8 178 q-5 -11 3 -19 q2 7 7 8 q0 -7 5 -12 q8 12 1 23z" fill="#ffd34d"/></g>`;
+    return `${SH.replace('cy="176"', 'cy="180"')}
+      <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".35"><path d="M70 74 q-8 -10 0 -20 q8 -10 0 -20"/><path d="M122 70 q-8 -10 0 -20 q8 -10 0 -20"/></g>
+      ${flame(30)}${flame(82)}${flame(134)}
+      <rect x="20" y="124" width="160" height="14" rx="7" fill="#2f343c"/>
+      <g stroke="#6a7280" stroke-width="3"><line x1="44" y1="126" x2="44" y2="136"/><line x1="76" y1="126" x2="76" y2="136"/><line x1="108" y1="126" x2="108" y2="136"/><line x1="140" y1="126" x2="140" y2="136"/></g>
+      <line x1="26" y1="106" x2="176" y2="112" stroke="#caa675" stroke-width="4" stroke-linecap="round"/>
+      <rect x="30" y="92" width="40" height="30" rx="10" fill="${meat}"/><rect x="76" y="92" width="40" height="30" rx="10" fill="${meat}"/><rect x="122" y="94" width="40" height="30" rx="10" fill="${meat}"/>
+      <g stroke="#2d140a" stroke-width="4" stroke-linecap="round" opacity=".5"><path d="M40 98 l12 18 M56 98 l12 18 M86 98 l12 18 M102 98 l10 18 M132 100 l12 18 M148 100 l10 18"/></g>
+      <g fill="#fff" opacity=".18"><rect x="36" y="95" width="26" height="6" rx="3"/><rect x="82" y="95" width="26" height="6" rx="3"/><rect x="128" y="97" width="26" height="6" rx="3"/></g>`;
+  },
+
+  snail(h) {
+    const shell = pickBy(h, ["#c99456", "#b98342", "#d6a468"]);
+    return `${SH}
+      <path d="M14 170 C10 140 38 124 70 140 L146 146 L156 170 Z" fill="#e8caa0"/>
+      <g stroke="#d9b684" stroke-width="5" stroke-linecap="round"><line x1="34" y1="138" x2="26" y2="108"/><line x1="50" y1="134" x2="52" y2="104"/></g>
+      <circle cx="26" cy="106" r="6" fill="#2b2b2b"/><circle cx="52" cy="102" r="6" fill="#2b2b2b"/>
+      <circle cx="118" cy="104" r="52" fill="${shell}"/><circle cx="118" cy="104" r="52" fill="none" stroke="#7d5224" stroke-width="3" opacity=".6"/>
+      <path d="M118 104 a8 8 0 0 1 8 8 a18 18 0 0 1 -18 18 a30 30 0 0 1 -30 -30 a42 42 0 0 1 42 -42 a50 50 0 0 1 50 50" fill="none" stroke="#7d5224" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="98" cy="78" rx="18" ry="9" fill="#fff" opacity=".18" transform="rotate(-30 98 78)"/>`;
+  },
+
+  burger() {
+    return `${SH}
+      <path d="M36 150 H164 Q164 172 140 172 H60 Q36 172 36 150Z" fill="#d9993d"/>
+      <rect x="32" y="130" width="136" height="22" rx="11" fill="#5b3420"/>
+      <path d="M32 126 H168 L152 142 L134 128 L118 144 L100 128 L32 128Z" fill="#f7c331"/>
+      <path d="M28 118 q10 -13 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 v8 H28Z" fill="#6bb43a"/>
+      <rect x="34" y="108" width="132" height="11" rx="5.5" fill="#d8432e"/>
+      <path d="M30 112 Q30 48 100 48 Q170 48 170 112Z" fill="#e3a243"/>
+      <g fill="#fbe9c2"><ellipse cx="70" cy="76" rx="6" ry="3" transform="rotate(-20 70 76)"/><ellipse cx="100" cy="64" rx="6" ry="3"/><ellipse cx="130" cy="78" rx="6" ry="3" transform="rotate(20 130 78)"/><ellipse cx="88" cy="92" rx="6" ry="3"/><ellipse cx="116" cy="94" rx="6" ry="3"/></g>`;
+  },
+
+  chicken(h) {
+    const meat = pickBy(h, ["#d9902e", "#c97f25", "#e2a042"]);
+    const leg = `<path d="M30 100 Q30 54 84 54 Q140 56 140 100 Q140 146 84 146 Q30 146 30 100Z" fill="${meat}"/>
+      <g fill="#f3c26a" opacity=".7"><circle cx="64" cy="76" r="9"/><circle cx="96" cy="68" r="8"/><circle cx="108" cy="104" r="9"/><circle cx="62" cy="116" r="8"/></g>
+      <g fill="#a8681a" opacity=".6"><circle cx="82" cy="96" r="7"/><circle cx="120" cy="84" r="6"/><circle cx="84" cy="130" r="6"/></g>
+      <rect x="130" y="92" width="46" height="15" rx="7.5" fill="#f6efe0"/><circle cx="174" cy="90" r="10" fill="#f6efe0"/><circle cx="174" cy="109" r="10" fill="#f6efe0"/>`;
+    return `${SH}<g transform="translate(40 -6) rotate(14 100 100) scale(.82)" opacity=".92">${leg}</g><g transform="translate(-6 8) rotate(-24 100 100)">${leg}</g>`;
+  },
+
+  fan(h) {
+    const skin = pickBy(h, ["#7b3a1a", "#8c4620", "#6b2f15"]);
+    const meat = pickBy(h, ["#e6b88a", "#efc79c", "#dca677"]);
+    let s = "";
+    [-44, -22, 0, 22, 44].forEach(a => {
+      s += `<g transform="rotate(${a} 100 158)"><rect x="87" y="72" width="26" height="76" rx="11" fill="${skin}"/><rect x="90" y="80" width="20" height="60" rx="9" fill="${meat}"/></g>`;
+    });
+    return `${SH}${PLATE}${s}<circle cx="160" cy="154" r="9" fill="#c1392b"/><circle cx="160" cy="154" r="5" fill="#8a1f16"/>`;
+  },
+
+  steak() {
+    return `${SH}${PLATE}
+      <path d="M48 132 Q42 94 86 86 Q142 78 154 116 Q158 148 108 154 Q58 160 48 132Z" fill="#6f321d"/>
+      <path d="M58 130 Q54 102 90 96 Q136 90 144 118 Q146 142 108 146 Q66 150 58 130Z" fill="#8b4429"/>
+      <g stroke="#2e140a" stroke-width="5" stroke-linecap="round" opacity=".55"><path d="M68 108 L92 142 M90 100 L116 146 M112 98 L138 140"/></g>
+      <rect x="92" y="94" width="22" height="14" rx="3" fill="#f6dc6a" transform="rotate(-8 100 100)"/>
+      <g fill="#f3c33b" stroke="#d99f1b" stroke-width="1.5"><rect x="140" y="124" width="8" height="38" rx="3" transform="rotate(28 144 140)"/><rect x="152" y="128" width="8" height="38" rx="3" transform="rotate(14 156 146)"/><rect x="132" y="130" width="8" height="38" rx="3" transform="rotate(40 136 150)"/></g>
+      <circle cx="46" cy="150" r="8" fill="#6bb43a"/><circle cx="56" cy="158" r="6" fill="#4f9a2b"/>`;
+  },
+
+  sushi(h) {
+    const fish = pickBy(h, ["#f08a5d", "#ee7a63", "#f6a07a"]);
+    return `${SH}
+      <rect x="12" y="148" width="176" height="16" rx="8" fill="#a8743a"/><rect x="12" y="148" width="176" height="6" rx="3" fill="#c28a4a"/>
+      <rect x="24" y="116" width="76" height="36" rx="15" fill="#fffdf6" stroke="#e9e3d2" stroke-width="2"/>
+      <path d="M18 126 Q20 94 62 92 Q104 94 106 126 Q62 138 18 126Z" fill="${fish}"/>
+      <g stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".75"><path d="M40 100 l-4 22 M58 96 l-2 26 M76 98 l2 24 M92 104 l4 18"/></g>
+      <circle cx="142" cy="122" r="31" fill="#1d2822"/><circle cx="142" cy="122" r="24" fill="#fffdf6"/><circle cx="142" cy="122" r="9" fill="#f08a5d"/><circle cx="142" cy="122" r="4" fill="#6bb43a"/>
+      <circle cx="30" cy="140" r="0" />`;
+  },
+
+  dumpling(h) {
+    const wrap = pickBy(h, ["#fff7ea", "#fbe9d0", "#f3d9a8"]);
+    const dp = (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 0 Q0 -32 26 -32 Q52 -32 52 0 Q26 11 0 0Z" fill="${wrap}" stroke="#d9c3a0" stroke-width="2"/>
+      <path d="M10 -24 l5 11 M20 -29 l3 14 M31 -29 l-1 14 M41 -24 l-5 11" stroke="#cdb08a" stroke-width="2.5" stroke-linecap="round"/></g>`;
+    return `${SH}${STEAM(100, 88)}
+      <path d="M22 152 v12 Q22 182 100 182 Q178 182 178 164 v-12Z" fill="#a0702f"/>
+      <ellipse cx="100" cy="152" rx="78" ry="23" fill="#c8944a"/><ellipse cx="100" cy="152" rx="68" ry="17" fill="#e3b872"/>
+      <path d="M22 160 Q100 190 178 160" fill="none" stroke="#7d5420" stroke-width="3"/>
+      ${dp(38, 148)}${dp(98, 142)}${dp(64, 162)}${dp(112, 164)}`;
+  },
+
+  pancake(h) {
+    const herbs = `<ellipse cx="62" cy="70" rx="16" ry="8" fill="#6bb43a" transform="rotate(-30 62 70)"/><ellipse cx="96" cy="58" rx="18" ry="8" fill="#85c94a" transform="rotate(-8 96 58)"/><ellipse cx="132" cy="66" rx="17" ry="8" fill="#6bb43a" transform="rotate(26 132 66)"/>
+      <path d="M142 80 q18 -4 20 12 q-14 -4 -20 -12z" fill="#f08a5d"/><circle cx="84" cy="80" r="8" fill="#f3a8b2"/>`;
+    return `${SH}${herbs}
+      <path d="M16 150 Q16 76 100 76 Q184 76 184 150Z" fill="#f0b73d"/>
+      <path d="M16 150 Q16 76 100 76 Q184 76 184 150Z" fill="none" stroke="#c88a14" stroke-width="3"/>
+      <g fill="#c88a14" opacity=".55"><circle cx="54" cy="122" r="5"/><circle cx="90" cy="108" r="4"/><circle cx="124" cy="126" r="5"/><circle cx="150" cy="110" r="4"/><circle cx="78" cy="136" r="4"/><circle cx="110" cy="96" r="3.5"/></g>
+      <path d="M26 150 Q26 96 100 90" fill="none" stroke="#fff" stroke-width="4" opacity=".25" stroke-linecap="round"/>`;
+  },
+  taco() {
+    return `${SH}
+      <path d="M24 84 q10 -18 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V92 H24Z" fill="#6bb43a"/>
+      <rect x="40" y="62" width="120" height="16" rx="8" fill="#8d4a28"/>
+      <circle cx="62" cy="68" r="9" fill="#d8432e"/><circle cx="104" cy="60" r="9" fill="#d8432e"/><circle cx="144" cy="70" r="8" fill="#f7c331"/>
+      <path d="M14 156 Q14 80 100 80 Q186 80 186 156Z" fill="#e7bd5a"/>
+      <path d="M14 156 Q14 80 100 80 Q186 80 186 156Z" fill="none" stroke="#b98a28" stroke-width="3"/>
+      <g fill="#c99a38" opacity=".7"><circle cx="50" cy="132" r="4"/><circle cx="92" cy="116" r="3.5"/><circle cx="130" cy="134" r="4"/><circle cx="156" cy="116" r="3.5"/></g>
+      <path d="M26 154 Q26 104 100 98" fill="none" stroke="#fff" stroke-width="4" opacity=".25" stroke-linecap="round"/>`;
+  },
+
+  sticky(h) {
+    return `${SH}
+      <ellipse cx="100" cy="150" rx="86" ry="27" fill="#4f9d3b"/><path d="M22 148 Q100 164 178 148" fill="none" stroke="#3b7d2b" stroke-width="3"/>
+      <path d="M44 148 Q50 86 100 84 Q150 86 156 148 Q100 168 44 148Z" fill="#f2c94c" stroke="#d9ab2d" stroke-width="2"/>
+      <g fill="#c78a2c"><circle cx="82" cy="104" r="5"/><circle cx="104" cy="96" r="4"/><circle cx="122" cy="112" r="5"/><circle cx="94" cy="120" r="4"/><circle cx="68" cy="126" r="4"/></g>
+      <g fill="#fff6d8" opacity=".8"><circle cx="112" cy="128" r="3"/><circle cx="86" cy="136" r="3"/><circle cx="132" cy="134" r="3"/></g>
+      <g fill="#8bc34a"><circle cx="140" cy="122" r="5"/><circle cx="76" cy="112" r="4"/></g>`;
+  },
+
+  egg() {
+    return `${SH}
+      <ellipse cx="100" cy="98" rx="46" ry="58" fill="#f4e4c6"/>
+      <ellipse cx="100" cy="98" rx="46" ry="58" fill="none" stroke="#dcc79d" stroke-width="3"/>
+      <path d="M58 70 L72 52 L84 68 L98 48 L112 68 L126 52 L140 70 Q100 40 58 70Z" fill="#8a4a32"/>
+      <ellipse cx="100" cy="60" rx="30" ry="12" fill="#e8a49a"/><circle cx="92" cy="58" r="6" fill="#f6c845"/>
+      <path d="M64 134 H136 L128 172 H72Z" fill="#d85f4a"/><rect x="60" y="130" width="80" height="10" rx="5" fill="#e87a63"/>
+      <g fill="#6bb43a"><ellipse cx="150" cy="150" rx="14" ry="6" transform="rotate(-24 150 150)"/><ellipse cx="156" cy="162" rx="13" ry="6" transform="rotate(14 156 162)"/></g>`;
+  },
+
+  beer() {
+    return `${SH}
+      <path d="M130 88 h18 q18 0 18 24 t-18 24 h-18" fill="none" stroke="#dfeaf0" stroke-width="11" stroke-linecap="round"/>
+      <rect x="44" y="64" width="90" height="106" rx="12" fill="#e8f1f5" opacity=".85"/>
+      <rect x="50" y="74" width="78" height="92" rx="8" fill="#f2b829"/>
+      <rect x="58" y="74" width="12" height="92" fill="#fff" opacity=".28"/>
+      <g fill="#fff" opacity=".6"><circle cx="86" cy="140" r="3"/><circle cx="102" cy="120" r="2.5"/><circle cx="94" cy="100" r="3"/><circle cx="112" cy="146" r="2.5"/></g>
+      <g fill="#fffdf4"><circle cx="58" cy="66" r="14"/><circle cx="76" cy="58" r="16"/><circle cx="96" cy="56" r="17"/><circle cx="116" cy="62" r="15"/><circle cx="130" cy="70" r="9"/></g>`;
+  },
+};
+
+/* món -> loại hình */
+const ART_RULES = [
+  [/^(lau|kichi)/, "hotpot"], [/^oc$/, "snail"], [/\bbia\b/, "beer"], [/sushi/, "sushi"],
+  [/dimsum|sui cao|banh goi/, "dumpling"], [/banh xeo/, "pancake"], [/taco/, "taco"], [/banh mi/, "bread"],
+  [/hamberger|hamburger|burger/, "burger"], [/trung vit lon/, "egg"], [/ga ran|ga nuong/, "chicken"],
+  [/(^|\s)(vit|ngan)\s|thit nuong|nem tai/, "fan"], [/bit tet/, "steak"], [/^nuong/, "grill"],
+  [/xoi/, "sticky"], [/chao/, "congee"], [/gyodon|^com\s/, "rice"], [/do thai/, "thai"],
+];
+function artFor(name) {
+  const n = norm(name), h = hash(name);
+  const rule = ART_RULES.find(([re]) => re.test(n));
+  const kind = rule ? rule[1] : "noodle";
+  const body = (ART[kind] || ART.noodle)(h, kind === "hotpot" ? name : undefined);
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}</svg>`;
+}
+
+/* ====================== dữ liệu & trạng thái ====================== */
+const S = { items: [], price: null, weather: null, pool: [], busy: false, muted: false };
+const poolOf = () => S.items.filter(i => i.price === S.price && i.weather.includes(S.weather));
+
+function cardHTML(it, extra = "") {
+  const r = rarityOf(it.name);
+  const art = it.image
+    ? `<img src="${it.image}" alt="" onerror="this.outerHTML=window.__art(${JSON.stringify(it.name).replace(/"/g, "&quot;")})">`
+    : artFor(it.name);
+  return `<div class="cw"><div class="card ${extra}" data-name="${it.name.replace(/"/g, "&quot;")}" style="--c:${r.c};--cg:${rgba(r.c, .38)}">
+    <div class="art">${art}</div><div class="nm">${it.name}</div></div></div>`;
+}
+window.__art = n => artFor(n);
+
+/* ====================== màn chọn ====================== */
+function refreshPick() {
+  document.querySelectorAll("#opts-price .opt").forEach(b => b.classList.toggle("sel", b.dataset.v === S.price));
+  document.querySelectorAll("#opts-weather .opt").forEach(b => b.classList.toggle("sel", b.dataset.v === S.weather));
+  const ok = S.price && S.weather;
+  $("#go").disabled = !ok;
+  $("#pool-info").innerHTML = ok ? `Trong hòm có <b>${poolOf().length}</b> món phù hợp` : "";
+}
+$("#opts-price").onclick = e => { const b = e.target.closest(".opt"); if (b) { S.price = b.dataset.v; refreshPick(); } };
+$("#opts-weather").onclick = e => { const b = e.target.closest(".opt"); if (b) { S.weather = b.dataset.v; refreshPick(); } };
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === id));
+  window.scrollTo(0, 0);
+}
+$("#go").onclick = () => { S.pool = poolOf(); if (!S.pool.length) return; prepareRoller(); show("screen-spin"); };
+$("#back1").onclick = $("#back2").onclick = () => { if (!S.busy) show("screen-pick"); };
+
+/* ====================== âm thanh ====================== */
+let actx = null;
+function audio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (actx && actx.state === "suspended") actx.resume(); return actx; }
+function tone(freq, dur, type = "square", vol = 0.04, when = 0) {
+  if (S.muted) return; const a = audio(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + when;
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
+}
+const tick = () => tone(1500 + Math.random() * 120, 0.035, "square", 0.035);
+function fanfare(rank) { [523, 659, 784, 1047].slice(0, 2 + Math.min(rank, 2)).forEach((f, i) => tone(f, 0.45, "triangle", 0.09, i * 0.12)); }
+$("#mute").onclick = () => { S.muted = !S.muted; $("#mute").textContent = S.muted ? "🔇" : "🔊"; };
+
+/* ====================== màn quay (kiểu mở hòm) ====================== */
+const CARDS = 66, WIN = 54, CW = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cw"));
+let seq = [], stripX = 0;
+
+function shuffled(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function randomOther(not) {
+  const others = S.pool.filter(x => !not.includes(x));
+  return others.length ? others[Math.floor(Math.random() * others.length)] : S.pool[0];
+}
+function prepareRoller() {
+  $("#chips").innerHTML = `<span class="chip">${PRICE[S.price]}</span><span class="chip">${WEATHER[S.weather]}</span><span class="chip">${S.pool.length} món trong hòm</span>`;
+  seq = [];
+  let bag = [];
+  for (let i = 0; i < CARDS; i++) {
+    if (!bag.length) bag = shuffled(S.pool);
+    let it = bag.pop();
+    if (S.pool.length > 1 && seq.length && it === seq[seq.length - 1]) { it = randomOther([seq[seq.length - 1]]); }
+    seq.push(it);
+  }
+  $("#strip").innerHTML = seq.map(it => cardHTML(it)).join("");
+  $("#roller").classList.remove("done");
+  $("#result").innerHTML = "";
+  $("#actions-open").style.display = ""; $("#actions-done").style.display = "none";
+  const w = $("#roller").clientWidth;
+  stripX = w / 2 - (3 * CW() + CW() / 2);
+  $("#strip").style.transform = `translateX(${stripX}px)`;
+}
+
+function openCase() {
+  if (S.busy) return; S.busy = true; audio();
+  $("#open").disabled = true;
+  const cw = CW(), strip = $("#strip");
+  // chọn món thắng (đồng đều giữa các món trong hòm) và thay vào ô WIN - ô này còn nằm ngoài màn hình
+  const winner = S.pool[Math.floor(Math.random() * S.pool.length)];
+  seq[WIN] = winner;
+  [WIN - 1, WIN + 1].forEach(i => { if (S.pool.length > 1 && seq[i] === winner) seq[i] = randomOther([winner, seq[i - 1], seq[i + 1]]); });
+  const cells = strip.children;
+  [WIN - 1, WIN, WIN + 1].forEach(i => { cells[i].outerHTML = cardHTML(seq[i], i === WIN ? "win" : ""); });
+
+  const w = $("#roller").clientWidth;
+  const jitter = rnd(-0.42, 0.42) * cw;                        // dừng ở điểm ngẫu nhiên trong ô, như CS
+  const target = w / 2 - (WIN * cw + cw / 2) - jitter;
+  const from = stripX, dist = target - from, T = 7600;
+  const t0 = performance.now();
+  let lastIdx = Math.floor((w / 2 - from) / cw);
+
+  const ease = x => 1 - Math.pow(1 - x, 4.2);
+  (function frame(now) {
+    const k = Math.min(1, (now - t0) / T);
+    stripX = from + dist * ease(k);
+    strip.style.transform = `translateX(${stripX}px)`;
+    const idx = Math.floor((w / 2 - stripX) / cw);
+    if (idx !== lastIdx) { tick(); lastIdx = idx; }
+    if (k < 1) requestAnimationFrame(frame); else finish(winner);
+  })(t0);
+}
+
+function finish(winner) {
+  const r = rarityOf(winner.name), rank = RARITY.indexOf(r);
+  $("#roller").classList.add("done");
+  fanfare(rank);
+  const pic = winner.image
+    ? `<img src="${winner.image}" alt="${winner.name.replace(/"/g, "&quot;")}" onerror="this.outerHTML=window.__art(${JSON.stringify(winner.name).replace(/"/g, "&quot;")})">`
+    : artFor(winner.name);
+  $("#result").innerHTML = `<div class="hero" style="--c:${r.c};--cg:${rgba(r.c, .45)}">
+      <div class="rays"></div><div class="halo"></div><div class="pic">${pic}</div></div>
+    <div class="lead">HÔM NAY ĂN</div>
+    <div class="dish" style="--c:${r.c}">${winner.name}</div>
+    <div class="rar" style="color:${r.c}">${r.name}</div>`;
+  $("#actions-open").style.display = "none"; $("#actions-done").style.display = "";
+  setTimeout(() => { const b = $("#actions-done").getBoundingClientRect(); if (b.bottom > innerHeight) $("#actions-done").scrollIntoView({ behavior: "smooth", block: "end" }); }, 450);
+  $("#open").disabled = false;
+  S.busy = false;
+}
+$("#open").onclick = openCase;
+$("#again").onclick = () => { if (S.busy) return; window.scrollTo({ top: 0, behavior: "smooth" }); prepareRoller(); setTimeout(openCase, 350); };
+
+/* ====================== khởi động ====================== */
+async function init() {
+  try {
+    // chạy bằng chay_web.py thì có /api/menu; bản tĩnh (GitHub Pages) thì đọc menu.json
+    let data;
+    try { const r = await fetch("/api/menu"); if (!r.ok) throw 0; data = await r.json(); }
+    catch { const r = await fetch("menu.json"); data = await r.json(); }
+    S.items = data.items;
+    if (data.warnings && data.warnings.length) $("#warn").textContent = data.warnings.join(" ");
+    if (!S.items.length) $("#warn").textContent = "Menu trống hoặc không đọc được.";
+  } catch (e) { $("#warn").textContent = "Không tải được menu - hãy chạy bằng chay_web.py"; }
+  if (location.hash === "#gallery") {
+    document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+    const g = $("#gallery"); g.style.display = "flex"; g.innerHTML = S.items.map(i => cardHTML(i)).join("");
+  }
+}
+init();
+</script>
+</body>
+</html>

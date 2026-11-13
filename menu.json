@@ -1,0 +1,461 @@
+{
+ "items": [
+  {
+   "name": "Cơm rang lạp xưởng",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/com-rang-lap-xuong.jpg"
+  },
+  {
+   "name": "Cháo trai / sườn sụn + bánh giò",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/chao-suon-banh-gio.jpg"
+  },
+  {
+   "name": "Trứng vịt lộn + mì gà tần",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/trung-vit-lon-mi-ga-tan.jpeg"
+  },
+  {
+   "name": "Cơm lươn",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/com-luon-nhat-ban.jpg"
+  },
+  {
+   "name": "Udon",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/mi-udon.webp"
+  },
+  {
+   "name": "Bánh mì bò xíu",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/banh-mi-bo-xiu.jpeg"
+  },
+  {
+   "name": "Phở xào",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/pho-xao.webp"
+  },
+  {
+   "name": "Bún riêu",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/bun-rieu.webp"
+  },
+  {
+   "name": "Bánh mì heo quay",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/banh-mi-heo-quay.jpeg"
+  },
+  {
+   "name": "Bánh mì truyền thống",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/banh-mi-truyen-thong.webp"
+  },
+  {
+   "name": "Bánh gối + miến trộn",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/banh-goi.jpeg"
+  },
+  {
+   "name": "Bún đậu",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh/bun-dau.jpg"
+  },
+  {
+   "name": "Gà rán",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/ga-ran.webp"
+  },
+  {
+   "name": "Hủ tiếu SG",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/hu-tieu-sai-gon-7.jpg"
+  },
+  {
+   "name": "Bánh mì thịt xiên",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/banh-mi-thit-xien.jpeg"
+  },
+  {
+   "name": "Bánh xèo nem lụi",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/banh-xeo-nem-lui.jpg"
+  },
+  {
+   "name": "Cơm tấm",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/com-tam.jpeg"
+  },
+  {
+   "name": "Phở gà + cơm gà",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/pho-ga-com-ga.jpeg"
+  },
+  {
+   "name": "Bánh canh ghẹ",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/banh-canh-ghe.jpeg"
+  },
+  {
+   "name": "Gyodon/bún thịt nướng/cơm tấm Láng Hạ",
+   "price": "re",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh_manual/gyudon-lang-ha.jpeg"
+  },
+  {
+   "name": "Tacos",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/tacos.jpg"
+  },
+  {
+   "name": "Bún Mắm",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh/bun-mam.jpg"
+  },
+  {
+   "name": "Gà nướng lu",
+   "price": "re",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh/ga-nuong-lu.jpg"
+  },
+  {
+   "name": "Nem tai Thành Công",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/nem-tai-thanh-cong.jpeg"
+  },
+  {
+   "name": "Cháo trai / bột lọc Thành Công",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/banh-bot-loc-thanh-cong.jpg"
+  },
+  {
+   "name": "Xôi thập cẩm",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/xoi-thap-cam.jpg"
+  },
+  {
+   "name": "Cơm nhà",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/com-nnha.webp"
+  },
+  {
+   "name": "Mì tôm",
+   "price": "re",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/mi-tom.jpeg"
+  },
+  {
+   "name": "Hamberger Nhật Tân",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/hamberger.jpeg"
+  },
+  {
+   "name": "Lẩu ốc",
+   "price": "dat",
+   "weather": [
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/lau_oc.jpg"
+  },
+  {
+   "name": "Vịt quay Phan Kế Bính",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/vit-quay-phan-ke-binh.jpg"
+  },
+  {
+   "name": "Vịt nướng Nguyễn Khang",
+   "price": "dat",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh_manual/vit-nuong-nguyen-khang.jpeg"
+  },
+  {
+   "name": "Ngan cháy tỏi",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/ngan-chay-toi.jpg"
+  },
+  {
+   "name": "Ốc",
+   "price": "dat",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh_manual/oc-luoc.jpg"
+  },
+  {
+   "name": "Bít tết Hòe Nhai",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/bit-tet-hoe-nhai.jpg"
+  },
+  {
+   "name": "Lẩu bò nhúng dấm",
+   "price": "dat",
+   "weather": [
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/lau-bo-nhung-dam.jpg"
+  },
+  {
+   "name": "Lẩu thái Hai Bà Trưng",
+   "price": "dat",
+   "weather": [
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/lau-thai.webp"
+  },
+  {
+   "name": "Nướng Hàn",
+   "price": "dat",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh_manual/nuong-han-quoc.jpg"
+  },
+  {
+   "name": "Nướng Nhật",
+   "price": "dat",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh_manual/nuong-nhat-ban.jpg"
+  },
+  {
+   "name": "Nướng Việt",
+   "price": "dat",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh_manual/nuong-viet-nam.webp"
+  },
+  {
+   "name": "Bia hơi",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/bia-hoi.jpeg"
+  },
+  {
+   "name": "Lẩu ếch Hương mực",
+   "price": "dat",
+   "weather": [
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/lau-ech-huong-muc.jpeg"
+  },
+  {
+   "name": "Thịt nướng Trung Hoa - Nguyễn Văn Tuyết",
+   "price": "dat",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh_manual/thit-nuong-trung-hoa.jpeg"
+  },
+  {
+   "name": "Cơm Tàu - đệ nhất sủi cảo",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/com-tau-de-nhat-sui-cao.jpeg"
+  },
+  {
+   "name": "Dimsum",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/dimsum.jpg"
+  },
+  {
+   "name": "Sushi",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh/sushi.jpg"
+  },
+  {
+   "name": "Kichi",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh_manual/kichi-kichi.png"
+  },
+  {
+   "name": "Đồ Thái",
+   "price": "dat",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh/do-thai.jpg"
+  }
+ ],
+ "warnings": []
+}
