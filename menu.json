@@ -455,6 +455,44 @@
     "lanh"
    ],
    "image": "hinh_anh/do-thai.jpg"
+  },
+  {
+   "name": "Cửu Vân Long Premium",
+   "price": "caocap",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh/cuu-van-long-premium.png"
+  },
+  {
+   "name": "Buffet Sen Hồ Tây",
+   "price": "caocap",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh/buffet-sen-ho-tay.jpg"
+  },
+  {
+   "name": "Haidilao",
+   "price": "caocap",
+   "weather": [
+    "lanh"
+   ],
+   "image": "hinh_anh/haidilao.jpg"
+  },
+  {
+   "name": "Pizza 4P's",
+   "price": "caocap",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh/pizza-4ps.jpg"
   }
  ],
  "warnings": []
