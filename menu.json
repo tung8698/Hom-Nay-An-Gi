@@ -169,6 +169,16 @@
    "image": "hinh_anh_manual/gyudon-lang-ha.jpeg"
   },
   {
+   "name": "Bánh cuốn",
+   "price": "binhdan",
+   "weather": [
+    "nong",
+    "mat",
+    "lanh"
+   ],
+   "image": "hinh_anh/banh-cuon.jpg"
+  },
+  {
    "name": "Cơm lươn",
    "price": "caithien",
    "weather": [
@@ -303,6 +313,14 @@
     "mat"
    ],
    "image": "hinh_anh_manual/vit-nuong-nguyen-khang.jpeg"
+  },
+  {
+   "name": "Bánh tráng nướng",
+   "price": "caithien",
+   "weather": [
+    "mat"
+   ],
+   "image": "hinh_anh/banh-trang-nuong.jpg"
   },
   {
    "name": "Lẩu ốc",
