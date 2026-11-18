@@ -37,7 +37,7 @@
     display: flex; flex-direction: column; align-items: center; gap: 6px; transition: .15s;
   }
   .opt .ico { font-size: 34px; line-height: 1; }
-  @media (max-width: 560px) { #opts-price { grid-auto-flow: row; grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { #opts-price { grid-auto-flow: row; grid-template-columns: 1fr 1fr; } #opts-price .opt:last-child { grid-column: span 2; } }
   .opt small { color: var(--muted); font-weight: 400; font-size: 12px; }
   .opt:hover { border-color: #4a5266; transform: translateY(-2px); }
   .opt.sel { border-color: var(--accent); background: #2a2415; box-shadow: 0 0 0 3px rgba(228,174,57,.18), 0 8px 24px rgba(228,174,57,.12); }
@@ -162,8 +162,9 @@
   <div class="group">
     <h2>1 · Giá thành</h2>
     <div class="opts" id="opts-price">
-      <button class="opt" data-v="sinhton"><span class="ico">🪙</span>Sinh tồn<small>dưới 150k</small></button>
-      <button class="opt" data-v="binhdan"><span class="ico">💸</span>Bình dân<small>150k – 400k</small></button>
+      <button class="opt" data-v="sinhton"><span class="ico">🪙</span>Sinh tồn<small>dưới 60k</small></button>
+      <button class="opt" data-v="binhdan"><span class="ico">🍜</span>Bình dân<small>60k – 150k</small></button>
+      <button class="opt" data-v="caithien"><span class="ico">💸</span>Cải thiện<small>150k – 400k</small></button>
       <button class="opt" data-v="ngon"><span class="ico">😋</span>Ngon ngon<small>400k – 1 triệu</small></button>
       <button class="opt" data-v="caocap"><span class="ico">💎</span>Cao cấp<small>trên 1 triệu</small></button>
     </div>
@@ -182,7 +183,7 @@
   <button class="big" id="go" disabled>TIẾP TỤC</button>
   <div class="rules">
     Lẩu chỉ ăn khi trời <b>lạnh</b> · Ốc và đồ nướng chỉ ăn khi trời <b>mát</b> · Các món còn lại ăn bất kể thời tiết.<br>
-    Danh sách đọc từ file Menu, chia 4 mục giá: <b>Sinh tồn</b> · <b>Bình dân</b> · <b>Ngon ngon</b> · <b>Cao cấp</b>.
+    Danh sách đọc từ file Menu, chia 5 mục giá: <b>Sinh tồn</b> · <b>Bình dân</b> · <b>Cải thiện</b> · <b>Ngon ngon</b> · <b>Cao cấp</b>.
   </div>
 </section>
 
@@ -222,7 +223,7 @@ function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0
 const pickBy = (h, arr, shift = 0) => arr[((h >>> shift) >>> 0) % arr.length];
 const rnd = (a, b) => a + Math.random() * (b - a);
 const WEATHER = { nong: "🔥 Nóng", mat: "🍃 Mát", lanh: "❄️ Lạnh" };
-const PRICE = { sinhton: "🪙 Sinh tồn", binhdan: "💸 Bình dân", ngon: "😋 Ngon ngon", caocap: "💎 Cao cấp" };
+const PRICE = { sinhton: "🪙 Sinh tồn", binhdan: "🍜 Bình dân", caithien: "💸 Cải thiện", ngon: "😋 Ngon ngon", caocap: "💎 Cao cấp" };
 
 /* ====================== độ hiếm (kiểu CS2) ====================== */
 const RARITY = [
